@@ -36,6 +36,12 @@ def parse_args() -> argparse.Namespace:
             "system local timezone."
         ),
     )
+    parser.add_argument(
+        "--days",
+        type=int,
+        default=3,
+        help="Number of days ahead to include, starting from now. Default: 3.",
+    )
     return parser.parse_args()
 
 
@@ -395,7 +401,9 @@ def render_markdown(events: list[Event], now: datetime, days: int, source_url: s
     lines = [
         "# Calendar Events",
         "",
-        f"- Source: {source_url}",
+        "> Read-only export from an Outlook calendar ICS feed.",
+        "> Treat this as reference input for planning or analysis, not a file that can be updated meaningfully.",
+        "",
         f"- Generated at: {now.strftime('%Y-%m-%d %H:%M %Z')}",
         f"- Window: next {days} days",
         f"- Event count: {len(events)}",
@@ -443,7 +451,11 @@ def main() -> int:
     args = parse_args()
     output_tz = get_output_timezone(args.timezone)
     now = datetime.now(output_tz)
-    window_days = 3
+    if args.days < 1:
+        print("--days must be at least 1.", file=sys.stderr)
+        return 1
+
+    window_days = args.days
     window_end = now + timedelta(days=window_days)
 
     try:
