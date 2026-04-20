@@ -1,0 +1,57 @@
+.local
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.codex
+.env
+.venv/
+env/
+venv/
+build/
+dist/
+*.tar.gz
+*.whl
+pip-wheel-metadata/
+
+# Test/coverage
+.pytest_cache/
+.pytest_result.json
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+.coverage.*
+.pyre/
+.mypy_cache/
+.pytype/
+.pyre/
+.ruff_cache/
+
+# Tooling
+.pyright/
+
+# Logs and runtime
+*.log
+logs/
+
+# Local environment files
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
