@@ -8,7 +8,7 @@ import sys
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta, tzinfo, timezone
 from typing import Iterable
 from zoneinfo import ZoneInfo
 
@@ -153,7 +153,7 @@ def unescape_ics_text(value: str) -> str:
     )
 
 
-def parse_datetime(value: str, params: dict[str, str], default_tz: ZoneInfo) -> tuple[datetime, bool, str | None]:
+def parse_datetime(value: str, params: dict[str, str], default_tz: tzinfo) -> tuple[datetime, bool, str | None]:
     value_type = params.get("VALUE", "").upper()
     tzid = params.get("TZID")
 
@@ -223,7 +223,7 @@ def weekday_to_ical(day: date) -> str:
     return ["MO", "TU", "WE", "TH", "FR", "SA", "SU"][day.weekday()]
 
 
-def build_event(properties: dict[str, list[PropertyValue]], default_tz: ZoneInfo) -> Event | None:
+def build_event(properties: dict[str, list[PropertyValue]], default_tz: tzinfo) -> Event | None:
     start_prop = first_property(properties, "DTSTART")
     if not start_prop:
         return None
@@ -262,7 +262,7 @@ def property_text(properties: dict[str, list[PropertyValue]], name: str, default
     return prop.value.strip() if prop and prop.value.strip() else default
 
 
-def parse_events(raw_text: str, default_tz: ZoneInfo, window_end: datetime) -> list[Event]:
+def parse_events(raw_text: str, default_tz: tzinfo, window_end: datetime) -> list[Event]:
     lines = unfold_ics_lines(raw_text)
     events: list[Event] = []
     in_event = False
@@ -294,7 +294,7 @@ def parse_events(raw_text: str, default_tz: ZoneInfo, window_end: datetime) -> l
 def expand_event(
     properties: dict[str, list[PropertyValue]],
     base_event: Event,
-    default_tz: ZoneInfo,
+    default_tz: tzinfo,
     window_end: datetime,
 ) -> list[Event]:
     if property_text(properties, "STATUS", "").upper() == "CANCELLED":
@@ -365,7 +365,7 @@ def expand_event(
     return occurrences or [base_event]
 
 
-def collect_exdates(properties: dict[str, list[PropertyValue]], default_tz: ZoneInfo) -> set[datetime]:
+def collect_exdates(properties: dict[str, list[PropertyValue]], default_tz: tzinfo) -> set[datetime]:
     excluded: set[datetime] = set()
     for prop in properties.get("EXDATE", []):
         for value in prop.value.split(","):
@@ -437,12 +437,12 @@ def compact_text(value: str) -> str:
     return " ".join(part.strip() for part in value.splitlines() if part.strip())
 
 
-def get_output_timezone(timezone_name: str | None) -> ZoneInfo:
+def get_output_timezone(timezone_name: str | None) -> tzinfo:
     if timezone_name:
         return ZoneInfo(timezone_name)
 
     local_tz = datetime.now().astimezone().tzinfo
-    if isinstance(local_tz, ZoneInfo):
+    if local_tz:
         return local_tz
     return ZoneInfo("UTC")
 
